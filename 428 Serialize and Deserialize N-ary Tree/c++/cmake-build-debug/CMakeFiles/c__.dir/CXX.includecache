@@ -1,0 +1,12 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/OneDrive_purdue_edu/schoolwork_gradchool_2_1/leetcode/428 Serialize and Deserialize N-ary Tree/c++/main.cpp
+cstdio
+-
+
