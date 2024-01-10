@@ -18,6 +18,7 @@ private:
         else if(list2== nullptr) return list1;
         else if(list1->val<list2->val) return list1;
         return list2;
+
     }
 public:
     ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
@@ -100,7 +101,8 @@ int mainTest() {
             {{15}, {0, 30, 45}, {0, 15, 30, 45}},                        // New test case 7
             {{}, {-1, 2, 3}, {-1, 2, 3}},                                // New test case 8
             {{-1, 0, 1}, {-2, 2}, {-2, -1, 0, 1, 2}},                    // New test case 9
-            {{0}, {1, 2, 3}, {0, 1, 2, 3}}                               // New test case 10
+            {{0}, {1, 2, 3}, {0, 1, 2, 3}},                               // New test case 10
+            {{1,2,3}, {8,9,10,11,12,13}, {1,2,3,8,9,10,11,12,13}}                               // New test case 10
     };
 
 

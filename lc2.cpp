@@ -15,19 +15,15 @@ public:
     ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
         ListNode *r1=l1,*r2=l2,*prevR2;
         int carry=0;
-        while(r1 || r2){
-            if(r1== nullptr){
-                r2->val+=carry;
-            }
+        while(r1||r2){
+            if(r1== nullptr) r2->val+=carry;
             else if(r2== nullptr){
-                r2=new ListNode(r1->val+carry,r1->next);//r2已脫離l2鏈
+                r2=new ListNode(r1->val+carry,r1->next);
+                prevR2->next=r2;
                 r1= nullptr;
-                prevR2->next=r2;//指回來
             }
-            else{
-                r2->val+=r1->val+carry;
-            }
-            carry=(r2->val)/10;
+            else r2->val+=r1->val+carry;
+            carry=r2->val/10;
             r2->val%=10;
             if(r1) r1=r1->next;
             prevR2=r2;
