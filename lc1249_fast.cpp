@@ -5,15 +5,22 @@ using namespace std;
 class Solution {
 public:
     static string minRemoveToMakeValid(string& s) {
-        stack<int> stk;// put index
+        deque<int> dq;// put index
         for(int i=0;i<s.size();++i){
             char& c=s[i];
-            if(c=='(') stk.push(i);
-            else if(c==')' && )
+            if(c=='(') dq.push_back(i);
+            else if(c==')' && !dq.empty()) dq.pop_back();
+            else if(c==')') c='$';
         }
-
         string newStr;
-        for(const char& c:s) if(c!='$') newStr+=c;
+        for(int i=0;i<s.size();++i){
+            if(!dq.empty() && dq.front()==i){
+                dq.pop_front();
+                continue;
+            }
+            if(s[i]=='$') continue;
+            newStr+=s[i];
+        }
         return newStr;
     }
 };
