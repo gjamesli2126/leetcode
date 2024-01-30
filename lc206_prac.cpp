@@ -12,16 +12,15 @@ struct ListNode {
 class Solution {
 public:
     ListNode* reverseList(ListNode* head) {
-        if(head== nullptr) return head;
+        if(head== nullptr) return nullptr;
+        ListNode *cur=head;
         ListNode *prev= nullptr;
-        ListNode *tmp;//=head;//->next;
-        while(head){lc206_inplace.cpp
-            tmp=head->next;
-            head->next=prev;
-            prev=head;
-            head=tmp;
+        while(cur!= nullptr){
+            ListNode *orgNext=cur->next;
+            cur->next=prev;
+            prev=cur;
+            cur=orgNext;
         }
-        //at this moment: head is nullptr
         return prev;
     }
 };

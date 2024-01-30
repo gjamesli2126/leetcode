@@ -39,7 +39,7 @@ public:
                 continue;
             }
             i=0;
-            st=reverse(st,end);
+            st=reverse(st,end);//st is the prev group's end
             end=st;//end 要更新成此st，繼續日後變2 ptr
         }
         return dumHead->next;
