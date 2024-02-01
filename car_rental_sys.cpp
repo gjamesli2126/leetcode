@@ -45,21 +45,33 @@ using namespace std;
 class Car{
 protected:
     string licensePlate, brand;
-    string status;
+    bool available;
     int seats_num=0;
 public:
-    Car(string brand,string license): licensePlate(std::move(license)), brand(std::move(brand)){}
-    Car(string brand,string license,string status): licensePlate(std::move(license)), brand(std::move(brand)), status(std::move(status)){}
-    string getlicensePlate(){return licensePlate;}
+    Car(string brand,string license,bool status=true): licensePlate(std::move(license)), brand(std::move(brand)), available(status){}
+//    Car(const Car& other)//copy constructor
+//    :licensePlate(other.licensePlate),
+//    brand(other.brand),
+//    available(other.available){};
+//    Car& operator=(const Car& other){
+//        if(this!=&other){
+//            licensePlate=other.licensePlate;
+//            brand=other.brand;
+//            available=other.available;
+//        }
+//        return *this;
+//    }
+    Car()=default;//default constructor
+    string getlicensePlate()const{return licensePlate;}
     void setlicensePlate(string licensePlate){ this->licensePlate=std::move(licensePlate);}
-    string getBrand(){return brand;}
+    string getBrand()const{return brand;}
     void setBrand(string brand){this->brand=std::move(brand);}
-    void setStatus(bool status){this->status=status;}
-    string getStatus(){return status;}
-    int getCapaciy(){return seats_num;}
+    void setStatus(bool status){this->available=status;}
+    bool getStatus()const{return available;}
+    int getCapaciy()const{return seats_num;}
 };
 
-class SUV:protected Car{
+class SUV: public Car{
 private:
     bool thirdRowOption;
 public:
@@ -71,7 +83,7 @@ public:
     void setThirdRowOption(bool option){thirdRowOption=option;}
     bool getThirdRowOption(){return thirdRowOption;}
 };
-class Sedan:protected Car{
+class Sedan: public Car{
 private:
     bool sportPackageOption;
 public:
@@ -82,38 +94,81 @@ public:
     void setSportPackageOption(bool option){sportPackageOption=option;}
     bool getSportPackageOption(){return sportPackageOption;}
 };
+
 class CarRental{
+private:
+    unordered_map<string,Car> plateCarMap;
+    unordered_map<string,vector<string>> brandPlateListMap;
 public:
-    void addCar(const SUV& suv){
-
+    void addCar(const Car& car){
+        string plate=car.getlicensePlate();
+        string brand=car.getBrand();
+        plateCarMap[plate]=car;
+        brandPlateListMap[brand].emplace_back(plate);
     }
-    void addCar(const Sedan& sedan){
-
-    }
-
     vector<Car> getAvailableCars(){
-
+        vector<Car> availCars;
+        for(const auto& [_,car]:plateCarMap){
+            if(!car.getStatus()) continue;
+            availCars.emplace_back(car);
+        }
+        return availCars;
     }
-    bool rentCar(const string_view& licensePlate){
-
+    bool rentCar(const string& licensePlate){
+        if(!plateCarMap.contains(licensePlate)) return false;
+        Car* car=&plateCarMap[licensePlate];
+        if(!car->getStatus()) return false;
+        car->setStatus(false);
+        return true;
     }
-    vector<Car> getAvailableCarsByBrand(const string_view& brand){
-
+    vector<Car> getAvailableCarsByBrand(const string& brand){
+        if(!brandPlateListMap.contains(brand)) throw std::invalid_argument("Brand not found");
+        vector<Car> availCar;
+        for(const auto& plate:brandPlateListMap[brand]){
+            Car* car=&plateCarMap[plate];//allocate ptr no need to use unique_ptr
+            if(!car->getStatus()) continue;
+            availCar.emplace_back(plateCarMap[plate]);
+        }
+        return availCar;
     }
-    bool returnCar(const string_view& licensePlate){
-
+    bool returnCar(const string& licensePlate){
+        if(!plateCarMap.contains(licensePlate)) return false;//car not in database
+        unique_ptr<Car> car= make_unique<Car>(plateCarMap[licensePlate]);
+        if(car->getStatus()) return false;//cannot return a car that is in our parking lot
+        car->setStatus(true);
+        return true;
     }
     vector<Car> getAvailableCarsBySeats(int seat_num){
-
+        if(seat_num!=4 && seat_num!=7) return {};
+        vector<Car> availCar;
+        for(const auto& [_,car]:plateCarMap){
+            if(car.getCapaciy()==seat_num) availCar.emplace_back(car);
+        }
+        return availCar;
     }
-    bool removeCar(const string_view& licensePlate){
-
+    bool removeCar(const string& licensePlate){
+        return plateCarMap.erase(licensePlate);
     }
     int getCarNumber(){
-
+        return static_cast<int>(plateCarMap.size());
     }
 
 };
+
+
+// ANSI color codes
+const string RED = "\033[31m";
+const string GREEN = "\033[32m";
+const string RESET = "\033[0m";
+
+void printStatus(bool success, const string& message) {
+    if (success) {
+        cout << GREEN << message << " - Pass" << RESET << endl;
+    } else {
+        cout << RED << message << " - Fail" << RESET << endl;
+    }
+}
+
 int main() {
     CarRental rentalSystem;
 
@@ -123,30 +178,38 @@ int main() {
 
     // Test getting available cars
     vector<Car> availableCars = rentalSystem.getAvailableCars();
-    cout << "Available cars count: " << availableCars.size() << endl; // Expect 2
+    cout << "Expected: 2, Actual: " << availableCars.size() <<"\t";
+    printStatus(availableCars.size() == 2, "Available cars count");
 
     // Test renting a car
     bool rentSuccess = rentalSystem.rentCar("123ABC");
-    cout << "Renting 123ABC successful: " << (rentSuccess ? "Yes" : "No") << endl; // Expect Yes
+    cout << "Expected: Yes, Actual: " << (rentSuccess ? "Yes" : "No") <<"\t";
+    printStatus(rentSuccess, "Renting 123ABC successful");
 
     // Test getting available cars by brand
     vector<Car> availableToyotas = rentalSystem.getAvailableCarsByBrand("Toyota");
-    cout << "Available Toyotas count: " << availableToyotas.size() << endl; // Expect 0 after renting
+    cout << "Expected: 0, Actual: " << availableToyotas.size() <<"\t";
+    printStatus(availableToyotas.size() == 0, "Available Toyotas count");
 
     // Test returning a car
     bool returnSuccess = rentalSystem.returnCar("123ABC");
-    cout << "Returning 123ABC successful: " << (returnSuccess ? "Yes" : "No") << endl; // Expect Yes
+    cout << "Expected: Yes, Actual: " << (returnSuccess ? "Yes" : "No") <<"\t";
+    printStatus(returnSuccess, "Returning 123ABC successful");
 
     // Test getting available cars by seats
     vector<Car> carsWithAtLeast4Seats = rentalSystem.getAvailableCarsBySeats(4);
-    cout << "Cars with at least 4 seats count: " << carsWithAtLeast4Seats.size() << endl; // Expect 2
+    cout << "Expected: 2, Actual: " << carsWithAtLeast4Seats.size() <<"\t";
+    printStatus(carsWithAtLeast4Seats.size() == 2, "Cars with at least 4 seats count");
 
     // Test car removal
     bool removeSuccess = rentalSystem.removeCar("456DEF");
-    cout << "Removing 456DEF successful: " << (removeSuccess ? "Yes" : "No") << endl; // Expect Yes
+    cout << "Expected: Yes, Actual: " << (removeSuccess ? "Yes" : "No") <<"\t";
+    printStatus(removeSuccess, "Removing 456DEF successful");
 
     // Final count of cars
-    cout << "Final cars count: " << rentalSystem.getCarNumber() << endl; // Expect 1
+    int finalCarCount = rentalSystem.getCarNumber();
+    cout << "Expected: 1, Actual: " << finalCarCount <<"\t";
+    printStatus(finalCarCount == 1, "Final cars count");
 
     return 0;
 }
