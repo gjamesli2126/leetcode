@@ -45,7 +45,7 @@ using namespace std;
 class Car{
 protected:
     string licensePlate, brand;
-    bool available;
+    bool available = false;
     int seats_num=0;
 public:
     Car(string brand,string license,bool status=true): licensePlate(std::move(license)), brand(std::move(brand)), available(status){}
@@ -81,7 +81,7 @@ public:
         seats_num = !thirdRowOption ? 4 : 7;
     }
     void setThirdRowOption(bool option){thirdRowOption=option;}
-    bool getThirdRowOption(){return thirdRowOption;}
+    bool getThirdRowOption() const{return thirdRowOption;}
 };
 class Sedan: public Car{
 private:
@@ -92,7 +92,7 @@ public:
         seats_num=4;
     }
     void setSportPackageOption(bool option){sportPackageOption=option;}
-    bool getSportPackageOption(){return sportPackageOption;}
+    bool getSportPackageOption() const{return sportPackageOption;}
 };
 
 class CarRental{
@@ -115,29 +115,36 @@ public:
         return availCars;
     }
     bool rentCar(const string& licensePlate){
-        if(!plateCarMap.contains(licensePlate)) return false;
-        Car* car=&plateCarMap[licensePlate];
-        if(!car->getStatus()) return false;
-        car->setStatus(false);
+        auto it=plateCarMap.find(licensePlate);
+        if(it==plateCarMap.end()) return false;
+        Car& car=it->second;
+        if(!car.getStatus()) return false;
+        car.setStatus(false);
         return true;
     }
+
     vector<Car> getAvailableCarsByBrand(const string& brand){
-        if(!brandPlateListMap.contains(brand)) throw std::invalid_argument("Brand not found");
+        if(!brandPlateListMap.contains(brand)) {
+            cout<<"Brand not found"<<endl;
+            return {};
+        };
         vector<Car> availCar;
         for(const auto& plate:brandPlateListMap[brand]){
-            Car* car=&plateCarMap[plate];//allocate ptr no need to use unique_ptr
-            if(!car->getStatus()) continue;
+            const Car& car=plateCarMap[plate];//allocate ptr no need to use unique_ptr
+            if(!car.getStatus()) continue;
             availCar.emplace_back(plateCarMap[plate]);
         }
         return availCar;
     }
     bool returnCar(const string& licensePlate){
-        if(!plateCarMap.contains(licensePlate)) return false;//car not in database
-        unique_ptr<Car> car= make_unique<Car>(plateCarMap[licensePlate]);
-        if(car->getStatus()) return false;//cannot return a car that is in our parking lot
-        car->setStatus(true);
+        auto it = plateCarMap.find(licensePlate);
+        if (it == plateCarMap.end()) return false; // Car not in database
+        Car& car = it->second;
+        if (car.getStatus()) return false; // Cannot return a car that is already in the parking lot
+        car.setStatus(true); // Mark the car as available
         return true;
     }
+
     vector<Car> getAvailableCarsBySeats(int seat_num){
         if(seat_num!=4 && seat_num!=7) return {};
         vector<Car> availCar;
@@ -152,7 +159,6 @@ public:
     int getCarNumber(){
         return static_cast<int>(plateCarMap.size());
     }
-
 };
 
 
@@ -163,9 +169,9 @@ const string RESET = "\033[0m";
 
 void printStatus(bool success, const string& message) {
     if (success) {
-        cout << GREEN << message << " - Pass" << RESET << endl;
+        cout << message << GREEN << " - Pass" << RESET << endl;
     } else {
-        cout << RED << message << " - Fail" << RESET << endl;
+        cout << message << RED << " - Fail" << RESET << endl;
     }
 }
 
@@ -210,6 +216,82 @@ int main() {
     int finalCarCount = rentalSystem.getCarNumber();
     cout << "Expected: 1, Actual: " << finalCarCount <<"\t";
     printStatus(finalCarCount == 1, "Final cars count");
+
+    // Try to rent a car that is already rented
+    rentSuccess = rentalSystem.rentCar("123ABC");//Rent his car first.
+    printStatus(rentSuccess, "First rent of 123ABC successful");
+    rentSuccess = rentalSystem.rentCar("123ABC"); // This car is already rented from previous test
+    cout << "Expected: No, Actual: " << (rentSuccess ? "Yes" : "No") <<"\t";
+    printStatus(!rentSuccess, "Renting an already rented car 123ABC should fail");
+
+    // Try to return a car that was not rented
+    returnSuccess = rentalSystem.returnCar("456DEF"); // Assuming this car was not rented
+    cout << "Expected: No, Actual: " << (returnSuccess ? "Yes" : "No") <<"\t";
+    printStatus(!returnSuccess, "Returning a car that was not rented 456DEF should fail");
+
+    // Try to rent a car that does not exist
+    rentSuccess = rentalSystem.rentCar("000XYZ");
+    cout << "Expected: No, Actual: " << (rentSuccess ? "Yes" : "No") <<"\t";
+    printStatus(!rentSuccess, "Renting a non-existent car 000XYZ should fail");
+
+    // Try to return a car that does not exist
+    returnSuccess = rentalSystem.returnCar("000XYZ");
+    cout << "Expected: No, Actual: " << (returnSuccess ? "Yes" : "No") <<"\t";
+    printStatus(!returnSuccess, "Returning a non-existent car 000XYZ should fail");
+
+    // Try to remove a car that does not exist
+    removeSuccess = rentalSystem.removeCar("000XYZ");
+    cout << "Expected: No, Actual: " << (removeSuccess ? "Yes" : "No") <<"\t";
+    printStatus(!removeSuccess, "Removing a non-existent car 000XYZ should fail");
+
+    // Try to get available cars by a brand that does not exist
+
+    availableCars = rentalSystem.getAvailableCarsByBrand("NonExistentBrand");
+    cout << "Expected: Exception, Actual: " << availableCars.size() <<" cars found\t";
+    if(!availableCars.size()) printStatus(true, "Querying cars by a non-existent brand threw an exception as expected");
+    else printStatus(false, "Querying cars by a non-existent brand should throw an exception");
+
+
+
+    // Try to add a car with a license plate that already exists
+    rentalSystem.addCar(SUV("Toyota", "123ABC")); // Duplicate plate
+    finalCarCount = rentalSystem.getCarNumber();
+    cout << "Expected: No change, Actual: " << finalCarCount <<"\t";
+    printStatus(finalCarCount == 1, "Adding a car with a duplicate license plate should not change the car count");
+
+    // Check the number of available cars after a failed rent operation
+    availableCars = rentalSystem.getAvailableCars();
+    cout << "Expected: Unchanged, Actual: " << availableCars.size() <<"\t";
+    printStatus(availableCars.size() == 1, "Available cars count should be unchanged after failed rent operation");
+
+    SUV toyotaSUV("Toyota", "789GHI", true);
+    rentalSystem.addCar(toyotaSUV);
+
+    // Test getting third-row option for SUV
+    bool thirdRowOption = toyotaSUV.getThirdRowOption();
+    cout << "Expected: Yes, Actual: " << (thirdRowOption ? "Yes" : "No") << "\t";
+    printStatus(thirdRowOption, "Toyota SUV should have third-row seating");
+
+    // Test setting third-row option for SUV
+    toyotaSUV.setThirdRowOption(false); // Update the third-row option
+    thirdRowOption = toyotaSUV.getThirdRowOption();
+    cout << "Expected: No, Actual: " << (thirdRowOption ? "Yes" : "No") << "\t";
+    printStatus(!thirdRowOption, "Toyota SUV third-row seating should be updated to No");
+
+    // Create a Sedan with a sports package
+    Sedan hondaSedan("Honda", "321JKL", true);
+    rentalSystem.addCar(hondaSedan);
+
+    // Test getting sports package option for Sedan
+    bool sportPackageOption = hondaSedan.getSportPackageOption();
+    cout << "Expected: Yes, Actual: " << (sportPackageOption ? "Yes" : "No") << "\t";
+    printStatus(sportPackageOption, "Honda Sedan should have a sports package");
+
+    // Test setting sports package option for Sedan
+    hondaSedan.setSportPackageOption(false); // Update the sports package option
+    sportPackageOption = hondaSedan.getSportPackageOption();
+    cout << "Expected: No, Actual: " << (sportPackageOption ? "Yes" : "No") << "\t";
+    printStatus(!sportPackageOption, "Honda Sedan sports package should be updated to No");
 
     return 0;
 }
