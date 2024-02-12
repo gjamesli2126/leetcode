@@ -3,25 +3,30 @@
 using namespace std;
 class Solution {
 private:
+    enum status{
+        unvisited,
+        seen,
+        fullyProcessed
+    };
     vector<unordered_set<int>> preReqs;
     vector<int> courses;
-    bool dfs(unordered_set<int>& visited,int course){
-        if(visited.contains(course)) return false;
-        if(preReqs[course].empty()) return true;
-        courses.emplace_back(course);
-        visited.insert(course);
-        //for all preq
-        for(const int& pre:preReqs[course]){//can be optimized by iter to only access once
-            if(!dfs(visited,pre)) return false;
+    vector<status> visited;
+    bool dfs(int course){
+        if(visited[course]==seen) return false;//cycle
+        else if(visited[course]==fullyProcessed) return true;
+        auto& pres=preReqs[course];
+        visited[course]=seen;
+        for(const auto& pre:pres){
+            if(!dfs(pre)) return false;
         }
-        visited.erase(course);
-        //meaning all preReq can be cleared
-        preReqs[course].clear();
+        visited[course]=fullyProcessed;
+        courses.emplace_back(course);
         return true;
     }
 public:
     vector<int> findOrder(int numCourses, vector<vector<int>>& prerequisites) {
         preReqs.resize(numCourses);
+        visited.resize(numCourses);
         //build graph
         for(const auto& vec:prerequisites){
             int crs=vec[0];
@@ -30,12 +35,9 @@ public:
         }
         //traverse with topological
         for(int crs=0;crs<numCourses;++crs){
-            unordered_set<int> visited;
-            if(!dfs(visited,crs)) continue;
-            cout<<courses.size()<<endl;
-            if(courses.size()==numCourses) return courses;
+            if(!dfs(crs)) return {};
         }
-        return {};
+        return courses;
     }
 };
 
