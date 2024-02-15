@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+#define mainTest main
 
 // Definition for singly-linked list.
 struct ListNode {
@@ -12,7 +13,13 @@ struct ListNode {
 class Solution {
 public:
     int getDecimalValue(ListNode* head) {
-        // Implementation to be done by you
+        ListNode *cur=head;
+        int res=0;
+        while(cur){
+            res=2*res+cur->val;
+            cur=cur->next;
+        }
+        return res;
     }
 };
 
@@ -45,8 +52,6 @@ void printTestResult(int testNum, int expected, int actual) {
         cout << "Failed. Expected: " << expected << ", Actual: " << actual << endl;
     }
 }
-
-#define mainTest main
 
 int mainTest() {
     vector<vector<int>> testCases = {{1,0,1}, {0}, {1,1,1,1,1}};
