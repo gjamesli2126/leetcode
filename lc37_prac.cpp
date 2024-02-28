@@ -4,57 +4,67 @@ using namespace std;
 
 class Solution {
 private:
-    static constexpr size_t get_cell(size_t row,size_t col) noexcept{
-        return 3*(row/3)+col/3;
+    static constexpr size_t get_cell(size_t r,size_t c) noexcept{
+        return 3*(r/3)+c/3;
     }
-    static constexpr size_t get_next_row(size_t row,size_t col) noexcept{
-        return row+(col+1)/9;
+    static constexpr size_t get_next_row(size_t r,size_t c){
+        return r+(c+1)/9;
     }
-    static constexpr size_t get_next_col(size_t col) noexcept{
-        return (col+1)%9;
+    static constexpr size_t get_next_col(size_t c){
+        return (c+1)%9;
     }
-    static constexpr pair<size_t,size_t> get_next_empty_position(vector<vector<char>>& board,size_t row,size_t col) noexcept{
-        while(row!=9){
-            if(board[row][col]=='.') return {row,col};
-            row= get_next_row(row,col);
-            col= get_next_col(col);
+    static constexpr pair<size_t,size_t> get_next_avail_position(vector<vector<char>>& board, size_t r,size_t c){
+        while(r!=9){
+            if(board[r][c]=='.') return {r,c};
+            //get next row,col
+            r= get_next_row(r,c);
+            c= get_next_col(c);
         }
         return {9,0};
     }
-    static bool solve(vector<vector<char>>& board, array<bitset<9>,9>& row_contains,array<bitset<9>,9>& col_contains,array<bitset<9>,9>& cell_contains, int row_start,int col_start) noexcept{
-        auto [r0,c0]= get_next_empty_position(board,row_start,col_start);
-        if(r0==9) return true;//end of board
-        const bitset<9> contains=row_contains[r0]|col_contains[c0]|cell_contains[get_cell(r0,c0)];
-        if(contains.all()) return false;
-        for(size_t dig_index=0;dig_index<9;++dig_index){//guessing num: 1-9
-            if(contains[dig_index]) continue;
-            board[r0][c0]=static_cast<char>(dig_index+'1');
-            row_contains[r0].set(dig_index);
-            col_contains[c0].set(dig_index);
-            size_t cell= get_cell(r0,c0);
-            cell_contains[cell].set(dig_index);
-            if(solve(board,row_contains,col_contains,cell_contains,r0,c0)) return true;
-            row_contains[r0].reset(dig_index);
-            col_contains[c0].reset(dig_index);
-            cell_contains[cell].reset(dig_index);
+    static bool solve(vector<vector<char>>& board,
+                      array<bitset<9>,9>& row_contains,
+                      array<bitset<9>,9>& col_contains,
+                      array<bitset<9>,9>& cell_contains,
+                      size_t row_start,size_t col_start) noexcept{
+        auto [r,c]= get_next_avail_position(board,row_start,col_start);
+        //base case
+        if(r==9) return true;//goes to row 9th meaning done the sudoku
+        size_t cell= get_cell(r,c);
+        const bitset<9> contained=row_contains[r]|col_contains[c]|cell_contains[cell];
+        if(contained.all()) return false;//meaning not yet traverse to the end but the empty position cannot be filled, cause having 1-9 already all in it
+        for(size_t digit_index=0; digit_index < 9; ++digit_index){
+            if(contained[digit_index]) continue;//although try out every possiblites, still skip the one had in r/c/cell
+            board[r][c]=static_cast<char>(digit_index+'1');
+            row_contains[r].set(digit_index);
+            col_contains[c].set(digit_index);
+            cell_contains[cell].set(digit_index);
+            if(solve(board,row_contains,col_contains,cell_contains,r,c)) return true;
+            //meaning this digit does not work
+            row_contains[r].reset(digit_index);
+            col_contains[c].reset(digit_index);
+            cell_contains[cell].reset(digit_index);
         }
-        board[r0][c0]='.';
+        //if all digits 0-8 does not work out in thie row,col-> back off
+        board[r][c]='.';
         return false;
     }
 public:
     void solveSudoku(vector<vector<char>>& board) {
-        array<bitset<9>,9> row_contains,col_contains,cell_contains;//default to zeros
+        array<bitset<9>,9> row_contains,col_contains,cell_contains;
+        //copy board to bitsets
         for(size_t r=0;r<9;++r){
             for(size_t c=0;c<9;++c){
-                char digit=board[r][c];
-                if(digit=='.') continue;
-                size_t digit_index=digit-'1';
-                row_contains[r].set(digit_index);
-                col_contains[c].set(digit_index);
-                cell_contains[get_cell(r,c)].set(digit_index);
+                if(board[r][c]=='.') continue;
+                char digit= board[r][c]-'1';//0-8
+                row_contains[r].set(digit);
+                col_contains[c].set(digit);
+                size_t cell= get_cell(r,c);
+                cell_contains[cell].set(digit);
             }
         }
-        solve(board,row_contains,col_contains, cell_contains,0,0);
+        //solve
+        assert(solve(board,row_contains,col_contains,cell_contains,0,0));
     }
 };
 

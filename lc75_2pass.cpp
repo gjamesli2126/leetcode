@@ -1,0 +1,66 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define mainTest main
+
+class Solution {
+private:
+    array<int,3> mp{};//init array
+public:
+    void sortColors(vector<int>& nums) {
+        for(const int i:nums) ++mp[i];
+        for(int i=0;i<nums.size();++i){
+            if(mp[0]-->0) nums[i]=0;
+            else if(mp[1]-->0) nums[i]=1;
+            else nums[i]=2;
+        }
+    }
+};
+
+void printArray(const vector<int>& nums) {
+    for (int num : nums) {
+        cout << num << " ";
+    }
+    cout << endl;
+}
+
+void printResult(bool passed) {
+    if (passed) {
+        cout << "\033[32mPass\033[0m" << endl;
+    } else {
+        cout << "\033[31mFail\033[0m" << endl;
+    }
+}
+
+bool compareArrays(const vector<int>& nums1, const vector<int>& nums2) {
+    if (nums1.size() != nums2.size()) return false;
+    for (size_t i = 0; i < nums1.size(); ++i) {
+        if (nums1[i] != nums2[i]) return false;
+    }
+    return true;
+}
+
+int mainTest() {
+    // Test Case 1
+    Solution solution1;
+    vector<int> nums1 = {2, 0, 2, 1, 1, 0};
+    vector<int> expected1 = {0, 0, 1, 1, 2, 2};
+    solution1.sortColors(nums1);
+    cout << "Expected: ";
+    printArray(expected1);
+    cout << "Output: ";
+    printArray(nums1);
+    printResult(compareArrays(nums1, expected1));
+
+    // Test Case 2
+    Solution solution2;
+    vector<int> nums2 = {2, 0, 1};
+    vector<int> expected2 = {0, 1, 2};
+    solution2.sortColors(nums2);
+    cout << "Expected: ";
+    printArray(expected2);
+    cout << "Output: ";
+    printArray(nums2);
+    printResult(compareArrays(nums2, expected2));
+
+    return 0;
+}
