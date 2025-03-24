@@ -7,7 +7,7 @@ public:
     vector<int> findRedundantConnection(vector<vector<int>>& edges) {
         int nodeNum=static_cast<int>(edges.size());
         vector<int> parents(nodeNum+1);//ignore the 0th element
-        iota(parents.begin()+1,parents.end(),1);
+        iota(parents.begin()+1,parents.end(),1);//my parent==self
         for(const auto& edge:edges){
             int firstNode=edge[0];
             int secondNode=edge[1];
