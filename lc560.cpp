@@ -3,10 +3,19 @@
 using namespace std;
 
 class Solution {
+private:
+    unordered_map<int,int> mp;//prefix_sum,count
 public:
     int subarraySum(vector<int>& nums, int k) {
-        // TODO: implement your solution here
-        return 0;
+        mp[0]=1;
+        int sum=0;
+        int count=0;
+        for(int n:nums){
+            sum+=n;
+            count+=mp[sum-k];
+            mp[sum]++;
+        }
+        return count;
     }
 };
 
@@ -43,6 +52,8 @@ int testMain(){
     // Input: nums = [1,2,3], k = 3
     // Expected Output: 2
     runTest(2, {1, 2, 3}, 3, 2);
+
+    runTest(3, {1}, 0, 0);
 
     return 0;
 }
