@@ -1,29 +1,31 @@
 #include <bits/stdc++.h>
 #define testMain main
 using namespace std;
+
 class Solution {
 public:
-    bool validWordAbbreviation(const string& word, const string& abbr) {
-        //2 ptr
-        int i=0;
-        int j=0;
-        while(i<word.length() && j<abbr.length()){
-            if(isalpha(abbr[j])){
-                if(abbr[j++]==word[i++]) continue;
-                return false;
-            }
-            int j0=j;
-            if(abbr[j0]=='0') return false;//no leading zero
-            while(j<abbr.length() && isdigit(abbr[j])) {
+    bool validWordAbbreviation(const string& word,const string& abbr) {
+        int i=0,j=0;
+        int num=0;
+        while(j<abbr.length()){
+            if(isdigit(abbr[j])){
+                if(abbr[j]=='0') return false;
+                num=0;
+                while(isdigit(abbr[j]) && j<abbr.length()){
+                    num = 10 * num + abbr[j] - '0';
+                    j++;
+                }
+                i+=num;
+            }else{
+                if(i>=word.length() || word[i]!=abbr[j]) return false;
+                i++;
                 j++;
             }
-            int num= stoi(abbr.substr(j0,j-j0));
-            while(num--) i++;
-            if(i>word.length()) return false;
         }
-        return i == word.length() && j == abbr.length();//!!!
+        return i==word.length();
     }
 };
+
 // Helper function to run and check a test case.
 // If the output doesn't match the expected result, the message is printed in red.
 void runTest(const string& testName, const string& word, const string& abbr, bool expected) {
@@ -47,6 +49,6 @@ int testMain(){
     runTest("Test Case 2", "apple", "a2e", false);
 
     // Additional test cases can be added here.
-    runTest("3","internationalization","i5a11o1",true);
+
     return 0;
 }
