@@ -5,32 +5,27 @@ using namespace std;
 class Solution {
 private:
     int rmax,cmax;
-    inline bool boundchk(int r,int c){
-        return r>=0 && r<rmax && c>=0 && c<cmax;
-    }
 public:
     vector<int> findDiagonalOrder(vector<vector<int>>& mat) {
-        /*The reason that this is faster:
-         * pre-calc r_low & r_high bound instead of checking at every loop (time complex is the same tho)
-         *
-         * */
+        //attempt in ans = r+c
         rmax=mat.size();
         cmax=mat[0].size();
-        if(!rmax || !cmax) return {};
+        if(!rmax) return {};
         vector<int> ans;
-        ans.reserve(rmax*cmax);
-        for(int attempt=0;attempt<rmax+cmax-1;++attempt){
-            int rlow_ind=max(0,attempt-(cmax-1));//attempt=r+c --->attempt -(cmax-1)=r;
-            int rhigh_ind=min(attempt,rmax-1);
-            //dir1 up rhigh->rlow
-            if(attempt%2==0) for(int i=rhigh_ind;i>=rlow_ind;i--) ans.push_back(mat[i][attempt-i]);//,i is r
-            //dir2 down rlow -> rhigh
-            else for(int i=rlow_ind;i<=rhigh_ind;i++) ans.push_back(mat[i][attempt-i]);
+        ans.reserve(cmax*rmax);
+        for(int attempt=0;attempt<rmax+cmax-1;attempt++){//rmax-1 + cmax-1 -0 +1 (+1因為要計算diag 數目)
+            //find r_low
+            int rlow_ind=max(0,attempt-(cmax-1));//r=attempt-(cmax-1), if r<0 then r=0
+            //find r_high
+            int rhigh_ind=min(rmax-1,attempt);//r 不可以超越 rmax-1
+            //find 左下～右上
+            if(attempt%2==0) for(int r=rhigh_ind;r>=rlow_ind;r--) ans.push_back(mat[r][attempt-r]);
+            //find 右上～左下
+            else for(int r=rlow_ind;r<=rhigh_ind;r++) ans.push_back(mat[r][attempt-r]);
         }
         return ans;
     }
 };
-
 // Helper function to run a test case and print pass (green) or fail (red)
 void runTest(int testNum, vector<vector<int>> mat, vector<int> expected) {
     Solution sol;

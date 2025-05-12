@@ -13,34 +13,35 @@ struct TreeNode {
 };
 
 class Solution {
-private:
-    vector<vector<pair<int,int>>> vec{2000,vector<pair<int,int>>()};//ind(cal), {row,val}
-    void dfs(int ind,int depth,TreeNode* node){
-        if(!node) return;
-        vec[ind].emplace_back(depth,node->val);
-        dfs(ind-1,1+depth,node->left);
-        dfs(ind+1,1+depth,node->right);
-    }
 public:
     vector<vector<int>> verticalTraversal(TreeNode* root) {
-        //travers w/ DFS whiling building a hashmap(vector,ind=0~2000)
-        dfs(1000,0,root);
-        //ans.push_back(sorted_sub_array)
+        vector<vector<pair<int,int>>> crv(2000);//index is col, {pair<row,val>,...}
+        queue<tuple<TreeNode*,int,int>> q;
+        q.emplace(root,0,1000);//node,r,c
+        while(!q.empty()){
+            auto [node,r,c]=q.front();
+            crv[c].emplace_back(r,node->val);
+            q.pop();
+            if(node->left) q.emplace(node->left,r+1,c-1);
+            if(node->right) q.emplace(node->right,r+1,c+1);
+        }
+
         vector<vector<int>> ans;
-        for(auto v:vec){
-            if(v.empty()) continue;
-            sort(v.begin(),v.end(),[&](pair<int,int> rv1,pair<int,int>rv2){
-                if(rv1.first!=rv2.first) return rv1.first<rv2.first;
-                return rv1.second<rv2.second;
-            });
+        for(auto &rv:crv){
+            if(rv.empty()) continue;
+            //sort map(crv)
+            auto cmp=[&rv](const pair<int,int>& p1,const pair<int,int>& p2){
+                if(p1.first==p2.first) return p1.second<p2.second;
+                return p1.first<p2.first;
+            };
+            sort(rv.begin(),rv.end(), cmp);
             vector<int> v_e;
-            for(auto p:v) v_e.push_back(p.second);
+            for(const auto [r,v]:rv) v_e.push_back(v);
             ans.push_back(v_e);
         }
         return ans;
     }
 };
-
 // Helper function: Build a binary tree from a vector of strings,
 // where "null" represents a null node.
 TreeNode* buildTree(const vector<string>& nodes) {
