@@ -3,45 +3,36 @@
 using namespace std;
 
 class Solution {
-    vector<string> ans;
-    int target;
-    string num0;
 private:
-    void recursiveSh(int stInd,long long prevOperand, long long totalSofar, const string& strSoFar){
-        if(stInd==num0.length()){
-            if(totalSofar==target) ans.emplace_back(strSoFar);
+    vector<string> ans;
+    void recursiveSh(int stInd,const string& num,long long target,long long prevOperand,long long totSoFar,string strSoFar){
+        if(stInd==num.length() && totSoFar==target){
+            ans.push_back(strSoFar);
             return;
         }
-        //leading zero: if single_digt--ok, if not single_digit do not process further
         long long parsedOperand=0;
-        for(int i=stInd;i<num0.size();i++){
-            //break if has leading zero
-            if(i!=stInd/*if not single digit, meaning wanna process further*/&& num0[stInd]=='0'/*first element is 0*/) break;
-            //parse the element
-//            long long parsedOperand=stoll(num0.substr(stInd,i-stInd+1));//to slow
-            parsedOperand=10*parsedOperand+num0[i]-'0';
-
-            //if single digit && at VERY FIRST
-            if(stInd==0) recursiveSh(i+1,parsedOperand,parsedOperand,strSoFar+ to_string(parsedOperand));
-            else{
-                //normal case, if op=+
-                recursiveSh(i+1,parsedOperand,totalSofar+parsedOperand,strSoFar+'+'+ to_string(parsedOperand));
-                //normal case, if op=-
-                recursiveSh(i+1,-parsedOperand,totalSofar-parsedOperand,strSoFar+'-'+to_string(parsedOperand));
-                //normal case, if op=*
-                recursiveSh(i+1,prevOperand*parsedOperand,totalSofar-prevOperand+prevOperand*parsedOperand,strSoFar+'*'+to_string(parsedOperand));
-                //normal case, if no-op
-                    //do nothing let i++
+        string numStr;
+        for(int i=stInd;i<num.length();i++){
+            //if single 0 is ok, but leading 0 is not ok
+            if(i>stInd && num[stInd]=='0') break;//and digit with leading 0 is invalid
+            parsedOperand=10*parsedOperand+num[i]-'0';
+            //if at the very very first digit in the whole num
+            numStr+=num[i];
+            if(stInd==0) recursiveSh(i+1,num,target,parsedOperand,parsedOperand, to_string(parsedOperand));
+            else {
+                recursiveSh(i + 1, num, target, parsedOperand, totSoFar + parsedOperand,
+                            strSoFar + '+' + numStr);//+
+                recursiveSh(i + 1, num, target, -parsedOperand, totSoFar - parsedOperand,
+                            strSoFar + '-' + numStr);//-
+                recursiveSh(i + 1, num, target, prevOperand * parsedOperand,
+                            totSoFar - prevOperand + prevOperand * parsedOperand,
+                            strSoFar + '*' + numStr);//*
             }
-
         }
-
     }
 public:
-    vector<string> addOperators(string num, int target) {
-        this->target=target;
-        num0=num;
-        recursiveSh(0,0,0,"");
+    vector<string> addOperators(const string& num, long long target) {
+        recursiveSh(0,num,target,0,0,"");
         return ans;
     }
 };

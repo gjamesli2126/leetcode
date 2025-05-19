@@ -32,7 +32,7 @@ public:
                 auto [p1,c1]=jmpS[l];
                 auto [p2,c2]=jmpS[r];
                 if(p2-p1+1<maxP1_minL.second) maxP1_minL={p1,p2-p1+1};
-                dictS[c1]--;
+                dictS[c1]--;//只會看到必要的
                 if(dictS[c1]<dictT[c1]) formed--;
                 l++;
             }

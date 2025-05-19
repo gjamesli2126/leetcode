@@ -5,25 +5,27 @@ using namespace std;
 class Solution {
 public:
     vector<vector<int>> intervalIntersection(vector<vector<int>>& firstList, vector<vector<int>>& secondList) {
-        int f,s;
+        int f=0;
+        int s=0;
         vector<vector<int>> ans;
-        for(f=0,s=0;f<firstList.size() && s<secondList.size();){
+        while(f!=firstList.size() && s!=secondList.size()){
             int fl=firstList[f][0];
             int fr=firstList[f][1];
             int sl=secondList[s][0];
             int sr=secondList[s][1];
+            //choose bigger l
+            int larger_l=(fl>sl)?fl:sl;
+            //choose smaller r
+            int smaller_r=(fr<sr)?fr:sr;
 
-            int chosen_l=(fl>sl)?fl:sl;
-            int chosen_r=(fr<sr)?fr:sr;
-            if(chosen_l<=chosen_r) ans.push_back({chosen_l,chosen_r});//管他誰前誰後 l 只用大, r只用小
-            //f++ or s++ 其實只要看 r 就好
-            if(fr<=sr) f++;
-            else s++;
+            if(larger_l<= smaller_r) ans.push_back({larger_l,smaller_r});
+            //chose f++ or s++ based on who's r is bigger(tend to overlap the next set)
+            if(fr>sr) s++;
+            else f++;
         }
         return ans;
     }
 };
-
 void runTest(int testNum, vector<vector<int>> firstList, vector<vector<int>> secondList, vector<vector<int>> expected) {
     Solution sol;
     vector<vector<int>> result = sol.intervalIntersection(firstList, secondList);
