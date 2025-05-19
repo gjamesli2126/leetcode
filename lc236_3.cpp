@@ -15,24 +15,18 @@ struct TreeNode {
 class Solution {
 private:
     TreeNode* found_node= nullptr;
-    int dfs(TreeNode* node,TreeNode* p,TreeNode* q){
-        if(!node) return 0;
-        int found=0;
-        if(node==p || node==q) found++;
-
-
-        found+=dfs(node->left,p,q);
-        found+=dfs(node->right,p,q);
-        if(found==2 && !found_node) {
-            found_node=node;
-            return 2;
-        }
+    int dfs(TreeNode* node, TreeNode* p, TreeNode* q) {
+        if (!node) return 0;
+        // PRUNE: don’t traverse once we’ve found the LCA
+        if (found_node) return 0;
+        int found = (node == p || node == q) ? 1 : 0;
+        found += dfs(node->left,  p, q);
+        found += dfs(node->right, p, q);
+        if (found == 2 && !found_node) found_node = node;
         return found;
     }
 public:
     TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
-        //using dfs and rec the flag where found
-
         dfs(root,p,q);
         return found_node;
     }

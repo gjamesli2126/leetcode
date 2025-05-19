@@ -3,7 +3,7 @@
 using namespace std;
 class SparseVector {
 public:
-    vector<pair<int,int>> ivs;
+    vector<pair<int,int>> ivs;//index_value
     SparseVector(vector<int> &nums) {
         for(int i=0;i<nums.size();i++) if(nums[i]) ivs.emplace_back(i,nums[i]);
     }

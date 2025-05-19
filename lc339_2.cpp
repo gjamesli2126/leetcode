@@ -56,19 +56,22 @@ public:
 class Solution {
 public:
     int depthSum(vector<NestedInteger>& nestedList) {
-        //using implicit BFS, leaf is an int, node w/ children is a NestedList
-        queue<pair<int,NestedInteger>> q;
-        int res=0;
-        for(const NestedInteger& nestedint:nestedList){
-            q.emplace(1,nestedint);
-            while(!q.empty()){
-                auto [weight,nested]=q.front();
+        queue<NestedInteger> q;
+        for (auto& ni : nestedList) q.push(ni);
+        int depth = 1;
+        int res = 0;
+        while (!q.empty()) {
+            int sz = q.size();
+            // process exactly one depth‑layer
+            for (int i = 0; i < sz; ++i) {
+                NestedInteger curr = q.front();
                 q.pop();
-                if(nested.isInteger()) res+=weight*nested.getInteger();
-                else{
-                    for(const NestedInteger &nested_in:nested.getList()) q.emplace(weight+1,nested_in);
+                if (curr.isInteger()) res += depth * curr.getInteger();
+                 else {
+                    for (auto &child: curr.getList()) q.push(child);
                 }
             }
+            depth++;
         }
         return res;
     }

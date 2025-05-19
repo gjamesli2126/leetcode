@@ -10,7 +10,7 @@ private:
 public:
     vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
         //find k min vales ->maxheap, c++ standard
-        priority_queue<pair<int,vector<int>>>maxHeap;
+        priority_queue<pair<int,vector<int>>>maxHeap;//dist, point
         for(vector<int>& pt:points){
             maxHeap.emplace(calc(pt),pt);
             if(maxHeap.size()>k) maxHeap.pop();

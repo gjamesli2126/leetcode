@@ -10,7 +10,7 @@ public:
         for(int i=1;i<intervals.size();i++){
             int f=intervals[i][0];
             int s=intervals[i][1];
-            if(f<=res.back()[1]) res.back()[1]=max(s,res.back()[1]);
+            if(f<=res.back()[1]) res.back()[1]=max(s,res.back()[1]);//if mergable
             else res.push_back(intervals[i]);
         }
         return res;

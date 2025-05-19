@@ -21,20 +21,23 @@ class Solution {
 //  - yields a highly predictable branch and direct O(1) array writes
 public:
     vector<int> rightSideView(TreeNode* root) {
-        if(!root) return {};
-        //要用BFS not DFS!!
-        queue<pair<TreeNode*,int>> ndq;//node_depth_queue
-        ndq.emplace(root,0);
+        if (!root) return {};
         vector<int> ans;
-        while(!ndq.empty()){
-            auto [node,depth]=ndq.front();
-            ndq.pop();
-            if(ans.size()==depth) ans.push_back(node->val);
-            else ans[depth]=node->val;
-
-            if(node->left) ndq.emplace(node->left,depth+1);
-            if(node->right) ndq.emplace(node->right,depth+1);
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            int sz = q.size();
+            // process one level of sz nodes
+            for (int i = 0; i < sz; ++i) {
+                TreeNode* node = q.front();
+                q.pop();
+                // the *last* node in this level is the rightmost
+                if (i == sz-1) ans.push_back(node->val);
+                if (node->left)  q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
         }
+
         return ans;
     }
 };

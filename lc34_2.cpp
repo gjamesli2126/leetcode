@@ -4,27 +4,29 @@ using namespace std;
 class Solution {
 public:
     vector<int> searchRange(vector<int>& nums, int target) {
-        if(nums.empty()) return {-1,-1};
-        int l,r,m;
-        //find lower bounder via bin-search
-        l=0,r=nums.size()-1;
-        int sol_l=-1;
-        while(l<r){
-            m=l+(r-l)/2;
-            if(nums[m]<target) l=m+1;
-            else r=m;
+        int n = nums.size();
+        if (n == 0) return {-1, -1};
+        // 1) find the first index ≥ target  (lower_bound)
+        int l = 0, r = n;           // r is exclusive
+        while (l < r) {
+            int m = (l + r) / 2;
+            if (nums[m] < target) l = m + 1;
+            else r = m;
         }
-        if(nums[l]!=target) return {-1,-1};
-        sol_l=l;
-        //find upper bounder via bin-search
-        l=0,r=nums.size()-1;
-        while(l<r){
-            m=l+(r-l+1)/2;//right bias
-            if(nums[m]>target) r=m-1;
-            else l=m;
+        // l is now the first pos with nums[l] ≥ target
+        if (l == n || nums[l] != target) return {-1, -1};
+        int sol_l = l;
+        // 2) find the first index > target  (upper_bound)
+        l = 0;
+        r = n;                      // again, r exclusive
+        while (l < r) {
+            int m = (l + r) / 2;
+            if (nums[m] <= target) l = m + 1;         // “push” right past the last ≤ target
+            else r = m;
         }
-
-        return {sol_l,l};
+        // l is now the first pos with nums[l] > target
+        int sol_r = l - 1;          // so the last pos == target is one back
+        return {sol_l, sol_r};
     }
 };
 
