@@ -6,7 +6,7 @@ class Solution {
 private:
     unordered_map<char,int> dicT;
     unordered_map<char,int> dicS;
-    vector<pair<int,char>> jmpS;//only keep the char that is requiredin the T
+    vector<pair<int,char>> jmpS;//only keep the char that is required in the T
     pair<int,int> l_r;
 public:
     string minWindow(const string& s,const string& t) {

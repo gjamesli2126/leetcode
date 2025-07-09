@@ -5,20 +5,21 @@ using namespace std;
 class Solution {
 public:
     int maximumSwap(int num) {
-        //one pass from back to front
-        string str= to_string(num);
+        //from the back
+        string ns= to_string(num);
+        int nsl=ns.length();
+        int max_num_i=-1;
         int sw_src_i=-1;
         int sw_tar_i=-1;
-        int max_num_i=-1;
-        for(int i=str.length()-1;i>=0;i--){
-            if(max_num_i==-1 || str[i]>str[max_num_i]) max_num_i=i;
-            else if(str[i]<str[max_num_i]){//剛彎下去 or 繼續下去
+        for(int i=nsl-1;i>=0;i--){
+            if(max_num_i==-1 || ns[i]>ns[max_num_i]) max_num_i=i;
+            else if(ns[i]<ns[max_num_i]){
                 sw_src_i=max_num_i;
                 sw_tar_i=i;
             }
         }
-        if(sw_src_i!=-1 && sw_tar_i!=-1) swap(str[sw_src_i],str[sw_tar_i]);//swap value
-        return stoi(str);
+        if(sw_src_i!=-1 && sw_tar_i!=-1) swap(ns[sw_src_i],ns[sw_tar_i]);
+        return stoi(ns);
     }
 };
 void runTest(int testNum, int num, int expected) {
