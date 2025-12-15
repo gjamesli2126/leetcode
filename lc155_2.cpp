@@ -4,32 +4,41 @@ using namespace std;
 
 class MinStack {
 private:
-    stack<int> stk;
-    stack<int> minstk;
+    stack<int> main_stack;
+    stack<int> min_stack;
 public:
-    MinStack() {}
+    MinStack() {
+
+    }
 
     void push(int val) {
-        stk.push(val);
-        if(minstk.empty() || val<=minstk.top()) minstk.push(val);
+        main_stack.push(val);
+        if(min_stack.empty() || val<=min_stack.top()) min_stack.push(val);
     }
 
     void pop() {
-        if(stk.empty()) return;
-        if(minstk.top()==stk.top()) minstk.pop();//當正好要把 min pop掉時 也同步pop
-        stk.pop();
+        //what if pop the min val
+        if(min_stack.top()==main_stack.top()) min_stack.pop();
+        main_stack.pop();
     }
 
     int top() {
-        if(stk.empty()) return NULL;
-        return stk.top();
+        return main_stack.top();//assuming main_stack must have val
     }
 
     int getMin() {
-        if(minstk.empty()) return NULL;
-        return minstk.top();
+        return min_stack.top();
     }
 };
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * MinStack* obj = new MinStack();
+ * obj->push(val);
+ * obj->pop();
+ * int param_3 = obj->top();
+ * int param_4 = obj->getMin();
+ */
 int mainTest() {
     // Local function for testing conditions.
     auto test = [](bool condition, const string &testName) {

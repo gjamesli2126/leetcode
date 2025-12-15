@@ -37,7 +37,7 @@ public:
         // 1. give every distinct e-mail a unique id
         for (auto &acc : accounts) {
             const string &name = acc[0];
-            for (int i = 1; i < (int)acc.size(); ++i) {
+            for (int i = 1; i < (int)acc.size(); ++i) {//this is the email
                 const string &email = acc[i];
                 if (!email2ID.count(email)) {
                     int id = id2Email.size();
