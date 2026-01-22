@@ -4,9 +4,71 @@ using namespace std;
 
 
 class Solution {
+private:
+    void apply(char sign, int num, stack<int>& stk){
+        int prev_num;
+        if(sign=='+') stk.push(num);
+        else if(sign=='-') stk.push(-num);
+        else if(sign=='*') {
+            prev_num=stk.top();
+            stk.pop();
+            stk.push(prev_num*num);
+        }
+        else if(sign=='/'){
+            prev_num=stk.top();
+            stk.pop();
+            stk.push(prev_num/num);
+        }
+    }
+    int sumStack(stack<int>& stk){
+        int res=0;
+        while(!stk.empty()){
+            res+=stk.top();
+            stk.pop();
+        }
+        return res;
+    }
+    int dfs(const string& s, int& i){
+        stack<int> stk;
+        char sign='+';
+        long num=0;
+        const int n=s.size();//we never split the string
+        while(i<n){
+            char c=s[i];
+            if(c==' '){
+                i++;
+                continue;
+            }
+            //number
+            if(isdigit(c)) num=num*10+c-'0';
+            //(
+            else if(c=='('){
+                i++;
+                num= dfs(s,i);
+                continue;
+            }
+            //), operator, end of string
+            else if(c=='+' || c=='-' || c=='*' || c=='/'){
+                apply(sign,num,stk);
+                sign=c;
+                num=0;
+            }
+            //end of recurrision
+            else if(c==')'){
+                apply(sign,num,stk);
+                i++;//skip the ")"
+                return sumStack(stk);
+            }
+            i++;
+        }
+        //if naturally run to the end of string
+        apply(sign,num,stk);
+        return sumStack(stk);
+    }
 public:
-    int calculate(string s) {
-
+    int calculate(const string& s) {
+        int i=0;//index
+        return dfs(s,i);
     }
 };
 
